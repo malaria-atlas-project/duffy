@@ -3,7 +3,7 @@ from model import *
 from generic_mbg import FieldStepper, thread_partition_array
 from cut_geographic import cut_geographic, hemisphere
 import duffy
-from postproc_utils import duffy_postproc
+from postproc_utils import *
 import pymc as pm
 import numpy as np
 import os
@@ -22,22 +22,28 @@ x_labels = {'eps_p_fb': 'data_mesh', 'eps_p_f0': 'data_mesh'}
 diags_safe = {'eps_p_fb': True, 'eps_p_f0': True}
 
 def phe0(eps_p_fb, eps_p_f0, p1):
-    """
-    Returns probability of Duffy negativity from two random fields giving mutation frequencies.
-    Fast and threaded.
-    """
-    cmin, cmax = thread_partition_array(eps_p_fb)        
-    pm.map_noreturn(duffy_postproc, [(eps_p_fb, eps_p_f0, p1, cmin[i], cmax[i]) for i in xrange(len(cmax))])
-    return eps_p_fb
+    cmin, cmax = thread_partition_array(eps_p_fb)
+    out = eps_p_fb.copy('F')     
+    pm.map_noreturn(phe0_postproc, [(out, eps_p_f0, p1, cmin[i], cmax[i]) for i in xrange(len(cmax))])
+    return out
 
 def gena(eps_p_fb, eps_p_f0, p1):
-    return (1-eps_p_fb)*p1
+    cmin, cmax = thread_partition_array(eps_p_fb)        
+    out = eps_p_fb.copy('F')         
+    pm.map_noreturn(gena_postproc, [(out, eps_p_f0, p1, cmin[i], cmax[i]) for i in xrange(len(cmax))])
+    return out
     
 def genb(eps_p_fb, eps_p_f0):
-    return eps_p_fb*(1-eps_p_f0)
+    cmin, cmax = thread_partition_array(eps_p_fb)        
+    out = eps_p_fb.copy('F')         
+    pm.map_noreturn(genb_postproc, [(out, eps_p_f0, cmin[i], cmax[i]) for i in xrange(len(cmax))])
+    return out
     
 def gen0(eps_p_fb, eps_p_f0):
-    return eps_p_fb * eps_p_f0
+    cmin, cmax = thread_partition_array(eps_p_fb)        
+    out = eps_p_fb.copy('F')         
+    pm.map_noreturn(gen0_postproc, [(out, eps_p_f0, cmin[i], cmax[i]) for i in xrange(len(cmax))])
+    return out
     
 map_postproc = [phe0, gena, genb, gen0]
 
