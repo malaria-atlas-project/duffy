@@ -21,18 +21,25 @@ C_labels = {'eps_p_fb': 'C_b', 'eps_p_f0': 'C_0'}
 x_labels = {'eps_p_fb': 'data_mesh', 'eps_p_f0': 'data_mesh'}
 diags_safe = {'eps_p_fb': True, 'eps_p_f0': True}
 
-def map_postproc(eps_p_fb, eps_p_f0, p1):
+def phe0(eps_p_fb, eps_p_f0, p1):
     """
     Returns probability of Duffy negativity from two random fields giving mutation frequencies.
     Fast and threaded.
-    TODO: Fortran-sticate this.
     """
-    
     cmin, cmax = thread_partition_array(eps_p_fb)        
-    
     pm.map_noreturn(duffy_postproc, [(eps_p_fb, eps_p_f0, p1, cmin[i], cmax[i]) for i in xrange(len(cmax))])
-    
     return eps_p_fb
+
+def gena(eps_p_fb, eps_p_f0, p1):
+    return (1-eps_p_fb)*p1
+    
+def genb(eps_p_fb, eps_p_f0):
+    return eps_p_fb*(1-eps_p_f0)
+    
+def gen0(eps_p_fb, eps_p_f0):
+    return eps_p_fb * eps_p_f0
+    
+map_postproc = [phe0, gena, genb, gen0]
 
 def validate_postproc(**non_cov_columns):
     """
