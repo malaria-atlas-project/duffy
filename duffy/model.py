@@ -44,7 +44,7 @@ def ibd_covariance_submodel(suffix):
     # 1 radian = the radius of the earth, about 6378.1 km
     # scale = pm.Exponential('scale', 1./.08, value=.08)
     
-    scale = pm.Uniform('scale',.01,2,value=.08)
+    scale = pm.Uniform('scale_%s'%suffix,.01,2,value=.08)
     # scale_shift = pm.Exponential('scale_shift_%s'%suffix, .1, value=.08)
     # scale = pm.Lambda('scale_%s'%suffix,lambda s=scale_shift: s+.01)
     scale_in_km = scale*6378.1
