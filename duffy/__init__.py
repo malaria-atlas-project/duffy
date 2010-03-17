@@ -44,13 +44,23 @@ def gen0(sp_sub_b, sp_sub_0):
     
 map_postproc = [phe0, gena, genb, gen0]
 
-def bphe(data):
-    if not np.all(data.datatype=='bphe'):
-        raise ValueError, 'Hold-out dataset contains non-\'bphe\' points.'
+def phe0(data):
     
-    obs = data.bpheb.astype('float')
-    def f(sp_sub_b, sp_sub_0):
-        p = 1-(1-pm.flib.invlogit(sp_sub_b)*(1-pm.flib.invlogit(sp_sub_0)))**2
+    if not np.all(data.datatype=='prom'+data.datatype=='gen'+data.datatype=='bla'):
+        raise ValueError, 'Hold-out dataset contains non-\'phe0-compatible\' points.'
+    
+    
+    where_gen = np.where(data.datatype=='gen')
+    where_phe = np.where(data.datatype=='phe')
+    where_prom = np.where(data.datatype=='prom')
+    
+    obs = np.empty(len(data), dtype='float')
+    obs[where_phe] = data[where_phe].phe0
+    obs[where_prom] = data[where_prom].prom0
+    obs[where_gen] = (np.sum([(data[k][where_gen]) for k in ['gen00','gen01','gen11']], axis=0))
+    
+    def f(sp_sub_b, sp_sub_0, p1):
+        p = phe0_postproc(sp_sub_b, sp_sub_0, p1)
         pred = pm.rbinomial(n=data.n, p=p)
         
         return pred
@@ -103,8 +113,8 @@ def het_0(data):
     return obs, data.n, f
         
 # Uncomment to choose validation metric.        
-# validate_postproc = [bphe]
-validate_postproc = [het_ab, het_0]
+validate_postproc = [phe0]
+# validate_postproc = [het_ab, het_0]
     
 metadata_keys = []
 
