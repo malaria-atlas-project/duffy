@@ -46,7 +46,7 @@ map_postproc = [phe0, gena, genb, gen0]
 
 def phe0(data):
     
-    if not np.all(data.datatype=='prom'+data.datatype=='gen'+data.datatype=='bla'):
+    if not np.all((data.datatype=='prom')+(data.datatype=='gen')+(data.datatype=='phe')):
         raise ValueError, 'Hold-out dataset contains non-\'phe0-compatible\' points.'
     
     
@@ -60,7 +60,8 @@ def phe0(data):
     obs[where_gen] = (np.sum([(data[k][where_gen]) for k in ['gen00','gen01','gen11']], axis=0))
     
     def f(sp_sub_b, sp_sub_0, p1):
-        p = phe0_postproc(sp_sub_b, sp_sub_0, p1)
+        p = sp_sub_b.copy('F')
+        phe0_postproc(p, sp_sub_0, p1)
         pred = pm.rbinomial(n=data.n, p=p)
         
         return pred
