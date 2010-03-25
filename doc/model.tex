@@ -26,7 +26,7 @@ The model targets two spatially-varying allele frequencies, the frequency of the
     m_{ab} \sim \textup{Normal}(0,10000) \\
     m_0 \sim \textup{Normal}(0,10000)\\
     \beta_{\mathtt{africa}} \sim \textup{Normal}(0,10000)\\
-    p_1\sim\textup{Uniform}(0,.4)\\
+    p_1\sim\textup{Uniform}(0,.05)\\
     \\
     M_{ab}(x) = \beta_{\textup{africa}} 1_{x\textup{\ in\ africa}} + m_{ab}\\
     M_0(x) = m_0\\
@@ -88,10 +88,10 @@ The a/b switch mutation happens with probability $P(b=1)=p_{ab}(x)$, which shoul
         \item[bpheb] This can happen if the genotype is genbb, genab, genb0 or genb1.
         \item[bphe0] The complement of bpheb. 
     \end{description}
-    \item[prom]: Molecular study looked only at promoter region.
+    \item[prom*]: Molecular study looked only at promoter region.
     \begin{description}
         \item[prom0]: This can only happen if the genotype is gen00, gen01 or gen11.
-        \item[promab]: The complement of pos0.
+        \item[promab]: The complement of prom0.
     \end{description}
 \end{description}
 
