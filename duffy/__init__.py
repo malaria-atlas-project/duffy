@@ -126,11 +126,11 @@ def mcmc_init(M):
         M.use_step_method(pm.AdaptiveMetropolis, tup)
         # for v in tup:
         #     M.use_step_method(pm.Metropolis, v)
-    # scalar_stochastics = []
-    # for v in M.stochastics:
-    #     if v not in M.eps_p_fb_d and v not in M.eps_p_f0_d and np.squeeze(v.value).shape == ():
-    #         scalar_stochastics.append(v)
-    # M.use_step_method(pm.AdaptiveMetropolis, scalar_stochastics)
+    scalar_stochastics = []
+    for v in M.stochastics:
+        if v not in M.eps_p_fb_d and v not in M.eps_p_f0_d and np.alen(v.value) == 1 and v.dtype != np.dtype('object'):
+            scalar_stochastics.append(v)
+    M.use_step_method(pm.gp.GPParentAdaptiveMetropolis, scalar_stochastics, scales = dict([(s,.01*np.asscalar(s.value)) for s in scalar_stochastics]))
 
 
 non_cov_columns = { 'n': 'int',
