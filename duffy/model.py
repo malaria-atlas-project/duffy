@@ -44,8 +44,9 @@ def ibd_covariance_submodel(suffix, mesh, covariate_values):
     # 1 radian = the radius of the earth, about 6378.1 km
     # scale = pm.Exponential('scale', 1./.08, value=.08)
     
-    scale_shift = pm.Exponential('scale_shift_%s'%suffix, .1, value=.08)
-    scale = pm.Lambda('scale_%s'%suffix,lambda s=scale_shift: s+.01)
+    # scale_shift = pm.Exponential('scale_shift_%s'%suffix, .1, value=.08)
+    # scale = pm.Lambda('scale_%s'%suffix,lambda s=scale_shift: s+.01)
+    scale = pm.Uniform('scale_%s'%suffix,.01,2,value=.08)
     scale_in_km = scale*6378.1
     
     # This parameter controls the degree of differentiability of the field.
@@ -117,7 +118,35 @@ def make_model(lon,lat,covariate_values,n,datatype,
     grainsize = 5
         
     # Non-unique data locations
-    logp_mesh = combine_spatial_inputs(lon, lat)
+    data_mesh = combine_spatial_inputs(lon, lat)
+    
+    # Uniquify the data locations.
+    locs = [(lon[0], lat[0])]
+    fi = [0]
+    ui = [0]
+    for i in xrange(1,len(lon)):
+        
+        # If repeat location, add observation
+        loc = (lon[i], lat[i])
+        if loc in locs:
+            fi.append(locs.index(loc))
+            
+        # Otherwise, new obs
+        else:
+            locs.append(loc)
+            fi.append(max(fi)+1)
+            ui.append(i)
+    fi = np.array(fi)
+    ti = [np.where(fi == i)[0] for i in xrange(max(fi)+1)]
+    ui = np.asarray(ui)
+    
+    lon = np.array(locs)[:,0]
+    lat = np.array(locs)[:,1]
+    
+    # Unique data locations
+    logp_mesh = combine_spatial_inputs(lon,lat)
+    
+    # Create the mean & its evaluation at the data locations.
     init_OK = False
     
     # Probability of mutation in the promoter region, given that the other thing is a.
