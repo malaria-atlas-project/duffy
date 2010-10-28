@@ -42,15 +42,10 @@ def ibd_covariance_submodel(suffix, mesh, covariate_values):
     
     # The range parameter. Units are RADIANS. 
     # 1 radian = the radius of the earth, about 6378.1 km
-    # scale = pm.Exponential('scale', 1./.08, value=.08)
-    
-    # scale_shift = pm.Exponential('scale_shift_%s'%suffix, .1, value=.08)
-    # scale = pm.Lambda('scale_%s'%suffix,lambda s=scale_shift: s+.01)
-    scale = pm.Uniform('scale_%s'%suffix,.01,2,value=.08)
-    scale_in_km = scale*6378.1
-    
+    scale = pm.Exponential('scale_%s'%suffix, .1, value=.08)
+
     # This parameter controls the degree of differentiability of the field.
-    diff_degree = pm.Uniform('diff_degree_%s'%suffix, .5, 3)
+    diff_degree = pm.Uniform('diff_degree_%s'%suffix, 0, 3)
     
     # The nugget variance. Lower-bounded to preserve mixing.
     V = pm.Exponential('V_%s'%suffix, .1, value=1.)
@@ -62,9 +57,12 @@ def ibd_covariance_submodel(suffix, mesh, covariate_values):
             return 0
     
     # Create the covariance & its evaluation at the data locations.
+    privar_dict = ['m':10000]
+    for k in covariate_values.iterkeys():
+        privar_dict[k]=10000
     @pm.deterministic(trace=True,name='C_%s'%suffix)
     def C(amp=amp, scale=scale, diff_degree=diff_degree):
-        eval_fun = CovarianceWithCovariates(pm.gp.matern.geo_rad, mesh, covariate_values)
+        eval_fun = CovarianceWithCovariates(pm.gp.matern.geo_rad, mesh, covariate_values, fac=privar_dict)
         return pm.gp.FullRankCovariance(eval_fun, amp=amp, scale=scale, diff_degree=diff_degree)
     
     # Create the mean function    
